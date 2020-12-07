@@ -1,1 +1,1 @@
-# Collors
+# Colors
