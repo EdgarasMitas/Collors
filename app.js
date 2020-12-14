@@ -1,8 +1,13 @@
 //Global selection and variables
 const colorDivs = document.querySelectorAll(".color");
-const generateBtn = document.querySelectorAll(".generate");
+const generateBtn = document.querySelector(".generate");
 const sliders = document.querySelectorAll('input[type = "range"]');
 const currentHex = document.querySelectorAll(".color h2");
+const popup = document.querySelector(".copy-container");
+const adjustButton = document.querySelectorAll(".adjust");
+const closeAdjustments = document.querySelectorAll(".close-adjustment");
+const sliderContainers = document.querySelectorAll(".sliders");
+const lockButtons = document.querySelectorAll(".lock");
 let initialColors;
 
 // Event listeners
@@ -11,29 +16,57 @@ sliders.forEach(slider => {
     slider.addEventListener("input", hslControls);
 });
 
+generateBtn.addEventListener("click", randomColor);
+
 colorDivs.forEach((div, index) => {
     div.addEventListener("change", () => {
         updateTextUI(index);
     })
+});
+currentHex.forEach(hex => { // allows to copy to clipboard
+    hex.addEventListener("click", () => {
+        copyToClipboard(hex);
+    })
+});
+
+popup.addEventListener('transitionend', () => { // copy element disapears
+    const popupBox = popup.children[0];
+    popupBox.classList.remove('active');
+    popup.classList.remove('active');
+});
+
+adjustButton.forEach((button, index) => { //open adjustment
+    button.addEventListener('click', () => {
+        openAdjustmentPanel(index); 
+    })
+});
+closeAdjustments.forEach((button, index) => { //close adjustment
+    button.addEventListener("click", () => {
+        closeAdjustmentPanel(index);
+    })
+});
+
+lockButtons.forEach((button,index) => {
+    button.addEventListener("click", ()=>{
+        lockColor(index);
+    })
 })
 
+
 // Functions 
+
+function lockColor(index) {
+    colorDivs[index].classList.toggle("locked");
+    lockButtons[index].children[0].classList.toggle("fa-lock-open");
+    lockButtons[index].children[0].classList.toggle("fa-lock");
+}
 
 // Color generator 
 function generateHex() {
     const hexColor = chroma.random(); //using chroma.js
     return hexColor;
 }
-// Color generator if writen by hand
-// function generateHex() {
-//     const letters = "0123456789ABCDE"; // All the letters and numbers possible for hex
-//     let hash = "#"; //hex number starts with #
 
-//     for (let i = 0; i < 6; i++) {
-//         hash += letters[Math.floor(Math.random() * 15)]; // To generate first take #, than generate random numbers
-//     }
-//     return hash; // return generated value
-// }
 
 // Generate random color
 function randomColor() { 
@@ -41,7 +74,13 @@ function randomColor() {
     colorDivs.forEach(div => { // for each div
         const hexText = div.children[0]; // selection of h2 elements of the div
         const randomColor = generateHex(); // assign color generator to variable
-        initialColors.push(chroma(randomColor).hex()); 
+        if (div.classList.contains("locked")) {
+            initialColors.push(hexText.innerText);
+            return;
+        } else {
+            initialColors.push(chroma(randomColor).hex()); 
+        };
+        
 
         // Add the color to the background
 
@@ -60,6 +99,11 @@ function randomColor() {
         colorizeSliders(color, hue, brightness,saturation);
     })
     resetInputs();
+    // check for button contrast
+    adjustButton.forEach((button, index) => {
+        checkTextContrast(initialColors[index], button);
+        checkTextContrast(initialColors[index], lockButtons[index]);
+    })
 }
 
 //Chech the contrast between text and color
@@ -144,6 +188,27 @@ function resetInputs() {
             slider.value = Math.floor(satValue *100) / 100;
         }
     })
+} 
+
+
+function copyToClipboard(hex) {
+    const el = document.createElement("textarea"); //in order to copy creating text area
+    el.value = hex.innerText; //assign the value of hex
+    document.body.appendChild(el); //add to body element
+    el.select(); // select that element 
+    document.execCommand("copy"); //execCommand allows to copy
+    document.body.removeChild(el);
+    // Popup animation
+    const popupBox = popup.children[0];
+    popup.classList.add("active");
+    popupBox.classList.add("active");
+}
+
+function openAdjustmentPanel(index) {
+    sliderContainers[index].classList.toggle("active");
+}
+function closeAdjustmentPanel(index) {
+    sliderContainers[index].classList.remove("active");
 }
 
 randomColor();
