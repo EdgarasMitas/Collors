@@ -119,6 +119,10 @@ input[type="range"] {
   border-radius: 1rem;
   cursor: pointer;
 }
+span {
+  color: black;
+  font-size: 1.2rem;
+}
 
 .copy-container,
 .save-container,
